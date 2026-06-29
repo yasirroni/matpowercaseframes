@@ -1300,27 +1300,43 @@ class CaseFrames(DataFramesStruct):
 
 
         Args:
-            path (str):
+            path (str | os.PathLike):
                 Directory path where the CSV files will be saved.
             prefix (str):
                 File prefix for each attribute CSV file.
             suffix (str):
                 File suffix for each attribute CSV file.
-            attributes (list | None):
-                Specific attributes to save (unused parameter).
+            attributes (list | str | None):
+                Specific attributes to save. If None, all attributes are saved.
         """
         # make dir
         os.makedirs(path, exist_ok=True)
 
-        data = {"INFO": {}}
-        for attribute in ATTRIBUTES_INFO:
-            if attribute in self._attributes:
-                data["INFO"][attribute] = getattr(self, attribute, None)
-        pd.DataFrame(data=data).to_csv(os.path.join(path, f"{prefix}info{suffix}.csv"))
+        if attributes is None:
+            attributes_to_save = list(self._attributes)
+        elif isinstance(attributes, str):
+            attributes_to_save = [attributes]
+        else:
+            attributes_to_save = list(attributes)
 
-        for attribute in self._attributes:
+        attributes_to_save = list(dict.fromkeys(attributes_to_save))
+
+        missing_attributes = [
+            attribute
+            for attribute in attributes_to_save
+            if attribute not in self._attributes
+        ]
+        if missing_attributes:
+            msg = (
+                f"Attributes not found: {missing_attributes}. "
+                f"Available attributes: {self._attributes}."
+            )
+            raise AttributeError(msg)
+
+        data = {"INFO": {}}
+        for attribute in attributes_to_save:
             if attribute in ATTRIBUTES_INFO:
-                continue
+                data["INFO"][attribute] = getattr(self, attribute, None)
             elif attribute in ATTRIBUTES_NAME:
                 pd.DataFrame(data={attribute: getattr(self, attribute)}).to_csv(
                     os.path.join(path, f"{prefix}{attribute}{suffix}.csv")
@@ -1329,6 +1345,11 @@ class CaseFrames(DataFramesStruct):
                 getattr(self, attribute).to_csv(
                     os.path.join(path, f"{prefix}{attribute}{suffix}.csv")
                 )
+
+        if data["INFO"]:
+            pd.DataFrame(data=data).to_csv(
+                os.path.join(path, f"{prefix}info{suffix}.csv")
+            )
 
     def to_dict(self):
         """
