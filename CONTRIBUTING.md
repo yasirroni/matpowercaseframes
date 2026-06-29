@@ -43,6 +43,14 @@ pytest -n auto -rA --lf -c pyproject.toml --cov-report term-missing --cov=matpow
 pytest --lf -rA -c pyproject.toml --cov-report term-missing --cov=matpowercaseframes --nbmake
 ```
 
+For specific test only:
+
+```shell
+pytest -n auto -rA --lf -c pyproject.toml \
+  --cov-report term-missing --cov=matpowercaseframes \
+  tests/test_core.py::test_to_and_read_csv
+```
+
 ## Pre-Commit
 
 ```shell
