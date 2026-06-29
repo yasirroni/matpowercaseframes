@@ -457,11 +457,14 @@ class CaseFrames(DataFramesStruct):
 
 
         Args:
-            data (str | dict | oct2py.io.Struct | np.ndarray | None, optional):
-                - str: File path to MATPOWER case name, .m file, or .xlsx file.
-                - dict: Data from a structured dictionary.
-                - oct2py.io.Struct: Octave's oct2py struct.
+            data:
+                Data source.
+                Supported input types:
+                - str or os.PathLike: MATPOWER case name, .m file, .xlsx file, or CSV
+                  directory.
+                - dict or oct2py.io.Struct: Structured case data.
                 - np.ndarray: Structured NumPy array with named fields.
+                - None: Empty CaseFrames object.
             load_case_engine (object, optional):
                 External engine used to call MATPOWER `loadcase` (e.g. Octave). Defaults
                 to None. If None, parse data using matpowercaseframes.reader.parse_file.
@@ -487,7 +490,6 @@ class CaseFrames(DataFramesStruct):
             FileNotFoundError:
                 If the specified file cannot be found.
         """
-        # TODO: support Path object
         super().__init__()
         if columns_templates is None:
             self.columns_templates = copy.deepcopy(COLUMNS)
@@ -519,7 +521,7 @@ class CaseFrames(DataFramesStruct):
 
 
         Args:
-            data (str | dict | np.ndarray | None, optional):
+            data (str | os.PathLike | dict | np.ndarray | None, optional):
                 Data source.
             load_case_engine (object | None, optional):
                 External engine for loading MATPOWER cases.
@@ -537,10 +539,9 @@ class CaseFrames(DataFramesStruct):
             TypeError:
                 If data type is not supported.
         """
-        if isinstance(data, str):
-            # TODO: support Path
-            # TYPE: str of path
-            path = self._get_path(data)
+        if isinstance(data, (str, os.PathLike)):
+            # TYPE: str or path-like path
+            path = self._get_path(os.fspath(data))
 
             # check if path is a directory (for CSV files)
             if os.path.isdir(path):
@@ -593,8 +594,9 @@ class CaseFrames(DataFramesStruct):
             self.name = ""
         else:
             message = (
-                f"Not supported source type {type(data)}. Data must be a str path to"
-                f" .m file, or oct2py.io.Struct, dict, or structured NumPy array."
+                f"Not supported source type {type(data)}. Data must be a str or"
+                f" path-like path to .m, .xlsx, or CSV data, or"
+                f" oct2py.io.Struct, dict, or structured NumPy array."
             )
             raise TypeError(message)
 
@@ -631,7 +633,7 @@ class CaseFrames(DataFramesStruct):
 
 
         Args:
-            path (str): File path, directory path, or MATPOWER case name.
+            path (str): Normalized file path, directory path, or MATPOWER case name.
 
 
         Returns:
