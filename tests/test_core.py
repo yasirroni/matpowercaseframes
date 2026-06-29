@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -221,8 +222,21 @@ def test_to_and_read_xlsx(case_path, attributes, output_path, prefix, suffix):
             "mpc.",
             "_test",
         ),
+        (
+            Path(CASE_PATH_CASE9),
+            ATTRIBUTES_CASE9,
+            Path("tests/results/case9_pathlib"),
+            "",
+            "",
+        ),
     ],
-    ids=["case9", "case9_prefix_suffix", "case118", "case118_prefix_suffix"],
+    ids=[
+        "case9",
+        "case9_prefix_suffix",
+        "case118",
+        "case118_prefix_suffix",
+        "case9_pathlib",
+    ],
 )
 def test_to_and_read_csv(case_path, attributes, output_dir, prefix, suffix):
     cf = CaseFrames(case_path)  # read .m file
