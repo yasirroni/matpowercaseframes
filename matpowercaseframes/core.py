@@ -1300,7 +1300,7 @@ class CaseFrames(DataFramesStruct):
 
 
         Args:
-            path (str):
+            path (str | os.PathLike):
                 Directory path where the CSV files will be saved.
             prefix (str):
                 File prefix for each attribute CSV file.
